@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" type="text/css" href="./css/style.css">
+    <script src="https://code.jquery.com/jquery-2.1.4.min.js"></script>
+    <script type='text/javascript' src='https://www.bing.com/api/maps/mapcontrol?callback=initMap' async defer></script>
+    <title>kadai_API_golfcourse</title>
+</head>
+<body>
+
+<div class="display_area">
+    <div class="input_area">
+        <h3>～ 自分お気に入りのゴルフ場リストを作る ～</h3>
+        <div>
+            <label>日付</label><input name="date" type="date" id="date"><br>
+            <label>ゴルフ場：</label>
+            <input type="text" id="searchQuery" placeholder="最初に入力して下さい">
+            <button onclick="searchLocation()">検索</button><br>
+            <div id="place">表示待ち</div>
+            <div id="lat"></div><div id="lon"></div>
+            <label>評価:</label><select name="hyouka" id="hyouka">
+                <option value="">選択してください</option>
+                <option value="1">1</option>
+                <option value="2">2</option>
+                <option value="3">3</option>
+                <option value="4">4</option>
+                <option value="4">5</option>
+                </select>
+        </div>
+        <!-- 画像を選択するフォームを追加 -->
+        <div>
+            <label>画像：</label><br><input type="file" id="imageInput">
+        </div>
+        <div>
+            <label>感想：</label><br>
+            <textarea id="text" cols="50" rows="3"></textarea><br>
+            <button id="send">送信</button>
+        </div>
+    </div>
+    <!-- <div id="output" style="overflow: auto;height: 300px;"></div> -->
+</div>
+
+ <!--■■■■■■■■■ MapArea ■■■■■■■■■-->
+  <div id="view"></div>
+   <div id='myMap' style='width: 800px; height: 450px;'></div>
+  
+<h3>～ お気に入りゴルフ場リスト ～</h3>
+<div>
+  <table>
+      <tr id="field_name">
+          <th>日付　　　　</th><th>ゴルフ場　　　　　</th><th>評価　</th><th>コメント</th><th>経度　　　</th><th>緯度　</th><th>　　　　写真</th>
+      </tr>
+    </table>
+    </div>
+
+<table id="golf_list"></table>
+
+<!--■■■■■■■■■ Bing Map API ■■■■■■■■■ -->
+<script>
+var map;
+var place; // グローバル変数として宣言
+var lat;   // 経度のためのグローバル変数
+var lon;   // 緯度のためのグローバル変数
+
+// APIキーを入力
+function initMap() {
+    map = new Microsoft.Maps.Map(document.getElementById('myMap'), {
+        credentials: 'ArilUm4KE2KUuSRqbPnM4xZqyGv-jWmvQHId8rPl1hlBpDTD2cuR4L5ytBZdFBAh'
+    });
+}
+
+ // ■■■ HTMLの21行目にjavascriptのplace値を表示するためのスクリプト ■■■
+ function displayPlaceValue() {
+      // JavaScriptのplace変数の値を取得
+      var placeValue = place;
+      var latValue = lat;
+      var lonValue = lon;
+      // HTMLのid="place"のテキストを変更
+      $('#place').text(placeValue);
+      $('#lat').text(latValue);
+      $('#lon').text(lonValue);
+
+  }
+
+function searchLocation() {
+    var searchQuery = document.getElementById('searchQuery').value;
+    Microsoft.Maps.loadModule('Microsoft.Maps.Search', function () {
+        var searchManager = new Microsoft.Maps.Search.SearchManager(map);
+        var requestOptions = {
+            where: searchQuery,
+            callback: function (answer, userData) {
+                if (answer && answer.results && answer.results.length > 0) {
+                    var location = answer.results[0].location;
+                    var pin = new Microsoft.Maps.Pushpin(location);
+                    map.entities.push(pin);
+
+                    // 経度と緯度の取得
+                    lat = location.latitude; // 経度をグローバル変数に代入
+                    lon = location.longitude; // 緯度をグローバル変数に代入
+                    place = searchQuery; // グローバル変数に代入
+                    console.log('緯度:', lat);
+                    console.log('経度:', lon);
+                    console.log('ゴルフ場:', place);
+                    // displayPlaceValue() 関数を呼び出して値を表示
+                    displayPlaceValue();
+                    // 地図の表示範囲を検索結果に基づいて拡大表示 (少し縮小)
+                    var bounds = Microsoft.Maps.LocationRect.fromLocations(location);
+                    // アニメーション効果をつけてズームレベルを15に変更する
+                    map.setView({ zoom: 15, center: location, animate: true });
+                } else {
+                    alert('Location not found.');
+                }
+            }
+        };
+        searchManager.geocode(requestOptions);
+    });
+}
+
+//****************************************
+//失敗関数
+
+//  function mapsError(error) {
+//       let e = "";
+//       if (error.code == 1) { //1＝位置情報取得が許可されてない（ブラウザの設定）
+//         e = "位置情報が許可されてません";
+//       }
+//       if (error.code == 2) { //2＝現在地を特定できない
+//         e = "現在位置を特定できません";
+//       }
+//       if (error.code == 3) { //3＝位置情報を取得する前にタイムアウトになった場合
+//         e = "位置情報を取得する前にタイムアウトになりました";
+//       }
+//       alert("エラー：" + e);
+//     };
+
+// LocalStorageにデータを保存する。
+$("#send").on("click", function() {
+  const val1 = $("#date").val();
+  const val2 = place; // place変数の値を取得する
+  const val3 = $("#hyouka").val();
+  const val4 = $("#imageInput").val();
+  const val5 = $("#text").val();
+  const val6 = $("#lat").text();  //テキストとして取得する
+  const val7 = $("#lon").text();  //テキストとして取得する
+  const value = val1 + "," + val2 + "," + val3 + "," + val4 +"," + val5 +"," + val6 + "," + val7;
+  const key0 = "golfcourse_key" + "," + val2;
+
+  console.log(val1);
+  console.log(val2);
+  console.log(val3);
+  console.log(val4);
+  console.log(val5);
+  console.log(value);
+  console.log(lat,"ブラウザ側");
+  console.log(lon,"ブラウザ側");
+  
+  localStorage.setItem(key0, value);
+ 
+// 記入欄を空白にする
+// divタグのテキストを空にするには、jQueryのval()関数を使っても要素の値を空にできないので、text()関数を使う。
+    $("#date").val("");
+    $("#searchQuery").val(""); 
+
+    $("#place").text(""); 
+    $("#lat").text("");
+    $("#lon").text("");
+    $("#hyouka").val("");
+    $("#imageInput").val("");
+    $("#text").val("");
+});
+
+// keyが指定の接頭辞を持つかをチェックする関数
+function isMatchingKey(key) {
+    return key.startsWith('golfcourse_key,');
+}
+
+//3.ページ読み込み：localstrageからデータ取得
+$(document).ready(function() {
+    for (let i = 0; i < localStorage.length; i++) {
+        const key = localStorage.key(i);
+        if (isMatchingKey(key)) {
+            const value = localStorage.getItem(key);
+
+            if (value) {
+                // データを','で分割
+                const [val1, val2, val3, val4, val5, val6, val7] = value.split(',');
+                console.log(val1, val2, val3, val4, val5, val6, val7,"localStorageから取得");
+                const html = '<tr><td>' + val1 + '</td><td>' + val2 + '</td><td>' + val3 + '</td><td>' + val5 + '</td><td>' + val6 + '</td><td>' + val7 + '</td><td>' + val4 + '</td></tr>';
+                $("#golf_list").append(html); // <table>要素の中に追加する
+                console.log("先頭キーでヒットするようだ");
+            }
+        }
+    }
+
+
+
+});
+</script>
+
+</body>
+</html>

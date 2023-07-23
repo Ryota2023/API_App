@@ -1,0 +1,4 @@
+日付: id="date";
+ゴルフ場名: id="place";
+画像: id="imageInput"
+感想: id="text";
