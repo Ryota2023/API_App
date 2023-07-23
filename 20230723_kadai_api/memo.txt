@@ -1,4 +1,15 @@
-日付: id="date";
-ゴルフ場名: id="place";
-画像: id="imageInput"
-感想: id="text";
+日付: id="date"
+ゴルフ場名: "searchQuery"、localStorageに保存するためのIDは(id="place")　※１
+評価（5段階）
+ゴルフ場画像: id="imageInput"
+ゴルフ場の感想: id="text"
+緯度：id="lat"
+経度：id="lon"
+
+
+var place; // グローバル変数として宣言
+var lat;   // 経度のためのグローバル変数
+var lon;   // 緯度のためのグローバル変数
+
+※１．ゴルフ場(id="searchQuery")を検索して、検索結果がtrueだった場合、functionで
+グローバル変数のplaceにsearchQueryの値を代入する。
